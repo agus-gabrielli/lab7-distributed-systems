@@ -1,6 +1,7 @@
 import express from "express";
 import db from "../db/conn.mjs";
 import { ObjectId } from "mongodb";
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -25,6 +26,16 @@ router.get("/:id", async (req, res) => {
 });
 
 
+const getUserFullName = async (userId) => {
+  try {
+    const response = await axios.get(process.env.USER_SERVICE_URL + userId);
+    return response.data.name;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 // Create and Save a new Order
 router.post("/", async (req, res) => {
   // Validate request
@@ -33,22 +44,26 @@ router.post("/", async (req, res) => {
     return;
   }
 
-  const orderData = {
-    product: req.body.product,
-    quantity: req.body.quantity,
-    state: req.body.state,
-    userid: req.body.userid,
-    date: new Date(),
-  };
+  const userId = req.body.userid;
 
   try {
+    // Get user full name asynchronously
+    const userFullName = await getUserFullName(userId);
+
+    const orderData = {
+      product: req.body.product,
+      quantity: req.body.quantity,
+      state: req.body.state,
+      userid: userId,
+      userfullname: userFullName,
+      date: new Date(),
+    };
+
     let collection = await db.collection("orders");
 
-    console.log(orderData)
     // Insert the order using insertOne
     const result = await collection.insertOne(orderData);
     res.send(result).status(200);
-
   } catch (error) {
     console.error('Error inserting order:', error);
     res.status(400).send({ message: "Error inserting order" });

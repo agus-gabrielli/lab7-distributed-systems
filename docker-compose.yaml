@@ -10,11 +10,11 @@ services:
     ports:
       - 8080:8080
     environment:
-      - MONGODB_URL=mongodb://root:password@mongodb:27017/
+      - MONGODB_URL=mongodb://root:password@user-service-mongodb:27017/
     depends_on:
-      - mongodb
+      - user-service-mongodb
 
-  mongodb:
+  user-service-mongodb:
     image: mongo:latest
     ports:
       - 27017:27017
@@ -37,8 +37,11 @@ services:
       - 8081:8081
     environment:
       - MONGODB_URL=mongodb+srv://root:YxsVxuxe1gLVbtQ1@orders.0nuix17.mongodb.net/?retryWrites=true&w=majority
+      - USER_SERVICE_URL=http://user-service:8080/users/
     stdin_open: true
     tty: true
+    depends_on:
+      - user-service
 
 volumes:
   userdb:
