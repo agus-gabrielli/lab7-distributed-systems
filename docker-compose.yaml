@@ -25,6 +25,20 @@ services:
     volumes:
       - userdb:/data/db
 
+  order-service:
+    image: order-service-img
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./order-service:/orders
+    ports:
+      - 8081:8081
+    environment:
+      - MONGODB_URL=mongodb+srv://root:YxsVxuxe1gLVbtQ1@orders.0nuix17.mongodb.net/?retryWrites=true&w=majority
+    stdin_open: true
+    tty: true
 
 volumes:
   userdb:
