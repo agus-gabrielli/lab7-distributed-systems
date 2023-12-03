@@ -1,30 +1,34 @@
 version: "3"
 services:
+
+  # User Service Container
   user-service:
     image: user-service-img
     build:
       context: ./user-service
       dockerfile: Dockerfile
     volumes:
-      - ./user-service/app:/code/app
+      - ./user-service/app:/code/app  # Mounts the local app directory into the container
     ports:
-      - 8080:8080
+      - 8080:8080  # Maps host port 8080 to container port 8080
     environment:
-      - MONGODB_URL=mongodb://root:password@user-service-mongodb:27017/
+      - MONGODB_URL=mongodb://root:password@user-service-mongodb:27017/  # MongoDB connection URL (note we are using the name of the mongodb service here in the docker-compose)
     depends_on:
-      - user-service-mongodb
+      - user-service-mongodb  # Ensures user-service-mongodb is started before user-service
 
+  # MongoDB Container for User Service
   user-service-mongodb:
     image: mongo:latest
     ports:
-      - 27017:27017
+      - 27017:27017  # Maps host port 27017 to container port 27017
     environment:
-      - MONGO_INITDB_DATABASE=users
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=users  # Initializes a database named 'users'
+      - MONGO_INITDB_ROOT_USERNAME=root  # Sets the root username for MongoDB
+      - MONGO_INITDB_ROOT_PASSWORD=password  # Sets the root password for MongoDB
     volumes:
-      - userdb:/data/db
+      - userdb:/data/db  # Mounts a volume for persistent data storage
 
+  # Order Service Container
   order-service:
     image: order-service-img
     build:
@@ -32,16 +36,17 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      - ./order-service:/orders
+      - ./order-service:/orders  # Mounts the local order-service directory into the container as /orders
     ports:
-      - 8081:8081
+      - 8081:8081  # Maps host port 8081 to container port 8081
     environment:
-      - MONGODB_URL=mongodb+srv://root:YxsVxuxe1gLVbtQ1@orders.0nuix17.mongodb.net/?retryWrites=true&w=majority
-      - USER_SERVICE_URL=http://user-service:8080/users/
+      - MONGODB_URL=mongodb+srv://root:YxsVxuxe1gLVbtQ1@orders.0nuix17.mongodb.net/?retryWrites=true&w=majority # Connection string for the Atlas database
+      - USER_SERVICE_URL=http://user-service:8080/users/  # URL of the User Service (note we are using the name of the user-service here in the docker-compose)
     stdin_open: true
     tty: true
     depends_on:
-      - user-service
+      - user-service  # Ensures user-service is started before order-service
 
+# Volumes definition
 volumes:
-  userdb:
+  userdb:  # Defines a volume named 'userdb' for persistent data storage
